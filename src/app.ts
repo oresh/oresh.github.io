@@ -6,8 +6,9 @@ document.addEventListener("touchstart", function(e){
 
 import * as palette from "./pallete"
 import * as utils from "./utils"
+import image_array from "./color_matrix";
 
-var image = [["000000", "000000", "000000", "000000", "000000", "000000", "000000", "000000", "000000", "000000", "151412", "151412", "151412", "151412", "151412", "151412"], ["000000", "000000", "000000", "000000", "000000", "000000", "000000", "000000", "000000", "151412", "b4896a", "e2af8b", "ffc59d", "5f5b52", "47443d", "151412"], ["000000", "000000", "000000", "000000", "000000", "000000", "000000", "000000", "151412", "644c3b", "d5a583", "ffc59d", "efebe4", "5f5b52", "312f2a", "151412"], ["000000", "000000", "000000", "000000", "000000", "000000", "000000", "151412", "ffcc12", "ffd84a", "644c3b", "ffe3cf", "ffc59d", "d2a281", "d2a281", "151412"], ["000000", "000000", "000000", "000000", "000000", "000000", "151412", "ffcc12", "ffd84a", "817330", "fdf3ae", "644c3b", "d2a281", "d2a281", "b4896a", "151412"], ["000000", "000000", "000000", "000000", "000000", "151412", "ffcc12", "ffd84a", "817330", "fdf3ae", "ffcf21", "f3c109", "644c3b", "b4896a", "b4896a", "151412"], ["000000", "000000", "000000", "000000", "151412", "ffcc12", "ffd84a", "817330", "fffce6", "f3d463", "f3c109", "4a421c", "d5a908", "644c3b", "151412", "000000"], ["000000", "000000", "000000", "151412", "787a7c", "ffd84a", "817330", "fefbe5", "f3d463", "f3c109", "4a421c", "e7b709", "a37c00", "151412", "000000", "000000"], ["000000", "000000", "151412", "787a7c", "a3a5a8", "787a7c", "fefbe5", "f3d463", "f3c109", "4a421c", "d5a908", "a37c00", "151412", "000000", "000000", "000000"], ["000000", "151412", "dd5741", "bd4a38", "787a7c", "d8dbdf", "787a7c", "f3c109", "4a421c", "d5a908", "886e18", "151412", "000000", "000000", "000000", "000000"], ["151412", "bd4a38", "f69a87", "f6775d", "db463c", "787a7c", "505154", "787a7c", "d5a908", "a37c00", "151412", "000000", "000000", "000000", "000000", "000000"], ["151412", "f69a87", "ffbc86", "ffdcc0", "ee523a", "db2418", "787a7c", "363739", "787a7c", "151412", "000000", "000000", "000000", "000000", "000000", "000000"], ["151412", "f6775d", "ffdcc0", "c63e2b", "db2418", "db2418", "b71e14", "787a7c", "151412", "000000", "000000", "000000", "000000", "000000", "000000", "000000"], ["000000", "151412", "f6775d", "db2418", "db2418", "b71e14", "7a0000", "151412", "000000", "000000", "000000", "000000", "000000", "000000", "000000", "000000"], ["000000", "000000", "151412", "db2418", "b71e14", "7a0000", "151412", "000000", "000000", "000000", "000000", "000000", "000000", "000000", "000000", "000000"], ["000000", "000000", "000000", "151412", "151412", "151412", "000000", "000000", "000000", "000000", "000000", "000000", "000000", "000000", "000000", "000000"]];
+var image = image_array;
 var image_height = image.length;
 var image_width = image[0].length;
 
@@ -58,85 +59,6 @@ var stage = new Konva.Stage({
   width: global.window_width,
   height: global.window_height,
 });
-
-function getDistance(p1, p2) {
-  return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
-}
-
-function getCenter(p1, p2) {
-  return {
-    x: (p1.x + p2.x) / 2,
-    y: (p1.y + p2.y) / 2,
-  };
-}
-var lastCenter:any = null;
-var lastDist = 0;
-
-stage.on('touchmove', function (e:any ) {
-  e.evt.preventDefault();
-  var touch1 = e.evt.touches[0];
-  var touch2 = e.evt.touches[1];
-
-  if (touch1 && touch2) {
-    // if the stage was under Konva's drag&drop
-    // we need to stop it, and implement our own pan logic with two pointers
-    if (stage.isDragging()) {
-      stage.stopDrag();
-    }
-
-    var p1 = {
-      x: touch1.clientX,
-      y: touch1.clientY,
-    };
-    var p2 = {
-      x: touch2.clientX,
-      y: touch2.clientY,
-    };
-
-    if (!lastCenter) {
-      lastCenter = getCenter(p1, p2);
-      return;
-    }
-    var newCenter = getCenter(p1, p2);
-
-    var dist = getDistance(p1, p2);
-
-    if (!lastDist) {
-      lastDist = dist;
-    }
-
-    // local coordinates of center point
-    var pointTo = {
-      x: (newCenter.x - stage.x()) / stage.scaleX(),
-      y: (newCenter.y - stage.y()) / stage.scaleX(),
-    };
-
-    var scale = stage.scaleX() * (dist / lastDist);
-
-    stage.scaleX(scale);
-    stage.scaleY(scale);
-
-    // calculate new position of the stage
-    var dx = newCenter.x - lastCenter.x;
-    var dy = newCenter.y - lastCenter.y;
-
-    var newPos = {
-      x: newCenter.x - pointTo.x * scale + dx,
-      y: newCenter.y - pointTo.y * scale + dy,
-    };
-
-    stage.position(newPos);
-
-    lastDist = dist;
-    lastCenter = newCenter;
-  }
-});
-
-stage.on('touchend', function () {
-  lastDist = 0;
-  lastCenter = null;
-});
-
 
 /**
  * 
@@ -212,13 +134,15 @@ function addSquareGroup(x:number, y:number, color:string) {
   });
 
   group.on('click', handleSquarePress);
-  group.on('tap', handleSquarePress);
+  // group.on('tap', handleSquarePress);
+  group.on('touchstart', handleSquarePress);
 
   group.add(rect)
   group.add(text)
 
   return group;
 }
+
 
 // add new layer for squares
 global.canvas_layer = new Konva.Layer({
@@ -227,7 +151,6 @@ global.canvas_layer = new Konva.Layer({
   draggable: true,
 });
 stage.add(global.canvas_layer);
-
 
 for (var i = 0; i < image_height; i++) {
   for (var j = 0; j < image_width; j++) {
@@ -238,6 +161,84 @@ for (var i = 0; i < image_height; i++) {
     if (unfilled_square !== null) global.canvas_layer.add(unfilled_square);
   }
 }
+
+function getDistance(p1:coordinates, p2:coordinates) {
+  return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+}
+
+function getCenter(p1:coordinates, p2:coordinates) {
+  return {
+    x: (p1.x + p2.x) / 2,
+    y: (p1.y + p2.y) / 2,
+  };
+}
+var lastCenter:any = null;
+var lastDist = 0;
+
+global.canvas_layer.on('touchmove', function (e:any ) {
+  e.evt.preventDefault();
+  var touch1 = e.evt.touches[0];
+  var touch2 = e.evt.touches[1];
+
+  if (touch1 && touch2) {
+    // if the stage was under Konva's drag&drop
+    // we need to stop it, and implement our own pan logic with two pointers
+    if (stage.isDragging()) {
+      stage.stopDrag();
+    }
+
+    var p1 = {
+      x: touch1.clientX,
+      y: touch1.clientY,
+    };
+    var p2 = {
+      x: touch2.clientX,
+      y: touch2.clientY,
+    };
+
+    if (!lastCenter) {
+      lastCenter = getCenter(p1, p2);
+      return;
+    }
+    var newCenter = getCenter(p1, p2);
+
+    var dist = getDistance(p1, p2);
+
+    if (!lastDist) {
+      lastDist = dist;
+    }
+
+    // local coordinates of center point
+    var pointTo = {
+      x: (newCenter.x - stage.x()) / stage.scaleX(),
+      y: (newCenter.y - stage.y()) / stage.scaleX(),
+    };
+
+    var scale = stage.scaleX() * (dist / lastDist);
+
+    stage.scaleX(scale);
+    stage.scaleY(scale);
+
+    // calculate new position of the stage
+    var dx = newCenter.x - lastCenter.x;
+    var dy = newCenter.y - lastCenter.y;
+
+    var newPos = {
+      x: newCenter.x - pointTo.x * scale + dx,
+      y: newCenter.y - pointTo.y * scale + dy,
+    };
+
+    stage.position(newPos);
+
+    lastDist = dist;
+    lastCenter = newCenter;
+  }
+});
+
+global.canvas_layer.on('touchend', function () {
+  lastDist = 0;
+  lastCenter = null;
+});
 
 
 /**
@@ -293,7 +294,6 @@ function exhaustColor(fillColor: string) {
   global.palette_colors[fillColor].completed = true;
   exhaustedColor.find('Circle')[0].opacity(0.4);
   
-  console.log(exhaustedColor);
   var nextColor = findNextUnfilledColor(fillColor);
   nextColor.fire('click');
 }

@@ -11,3 +11,8 @@ type globalType = {
     palette_colors?: any;
     palette_sorted: Array<string>;
   };
+
+type coordinates = {
+  x: number,
+  y: number
+}
