@@ -154,3 +154,16 @@ img {
     background-color: #382110;
     color: #fff;
 }
+
+
+@media screen and (max-width: 700px) {
+    body .tier {
+      display: block;
+    }
+    body .tier-class {
+      width: auto;
+      padding: 20px;
+      margin: 15px 0 10px 0;
+    }
+    
+}
